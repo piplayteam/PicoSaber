@@ -9,6 +9,11 @@ import adafruit_mpu6050
 from digitalio import DigitalInOut, Direction, Pull
 import neopixel
 
+i2s = audiobusio.I2SOut(board.GP27, board.GP28, board.GP26)
+data = open("on.mp3", "rb")
+saber_on = audiomp3.MP3Decoder(data)
+i2s.play(saber_on)
+
 pixel_pin = board.GP0
 num_pixels = 7
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.0, auto_write=False)
@@ -23,8 +28,7 @@ PURPLE = (180, 0, 255)
 WHITE = (255, 255, 255)
 
 SABER_COLOR = RED
-# i2c = busio.I2C(board.GP3, board.GP2)
-# mpu = adafruit_mpu6050.MPU6050(i2c)
+
 
 btn = DigitalInOut(board.GP5)
 btn.direction = Direction.INPUT
@@ -35,7 +39,6 @@ whack = DigitalInOut(board.GP15)
 whack.direction = Direction.INPUT
 whack.pull = Pull.UP
 
-i2s = audiobusio.I2SOut(board.GP27, board.GP28, board.GP26)
 
 data = open("on.mp3", "rb")
 saber_on = audiomp3.MP3Decoder(data)
@@ -46,25 +49,7 @@ saber_off = audiomp3.MP3Decoder(data)
 data = open("Clash clash.mp3", "rb")
 saber_clash = audiomp3.MP3Decoder(data)
 lightsaber_active = False
-# led = digitalio.DigitalInOut(board.GP17)
-# led.direction = digitalio.Direction.OUTPUT
-# led.value = True
 
-
-
-# print("playing")
-# #i2s.play(mp3_2)
-# while i2s.playing:
-#   pass
-# print("stopped")
-
-# print("playing")
-# #i2s.play(mp3_3)
-# while i2s.playing:
-#   pass
-# print("stopped")
-
-# time.sleep(0.5)
 
 def idle_lightsaber(sound):
     while i2s.playing:
@@ -193,37 +178,3 @@ while True:
       pixels.fill(SABER_COLOR)
       pixels.brightness = 1.0
       pixels.show()
-    # led.value = False
-
-    # pixels.fill(RED)
-    # pixels.show()
-    #time.sleep(1)
-    #pixels.fill(ORANGE)
-    #pixels.show()
-    #time.sleep(1)
-    # pixels.fill(YELLOW)
-    # pixels.show()
-    # time.sleep(1)
-    # pixels.fill(GREEN)
-    # pixels.show()
-    # time.sleep(1)
-    # pixels.fill(CYAN)
-    # pixels.show()
-    # time.sleep(1)
-    # pixels.fill(BLUE)
-    # pixels.show()
-    # time.sleep(1)
-    # pixels.fill(PURPLE)
-    # pixels.show()
-
-    # print("Acceleration: X:%.2f, Y: %.2f, Z: %.2f m/s^2"%(mpu.acceleration))
-    # print("Gyro X:%.2f, Y: %.2f, Z: %.2f degrees/s"%(mpu.gyro))
-    # print("Temperature: %.2f C"%mpu.temperature)
-    # print("")
-    # cur_state = btn.value
-    # print(btn.value)
-    # if cur_state != prev_state:
-    #     if not cur_state:
-    #         print("BTN is down")
-    #     else:
-    #         print("BTN is up")
