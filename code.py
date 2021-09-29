@@ -5,9 +5,9 @@ import audiobusio
 import digitalio
 import time
 import busio
-import adafruit_mpu6050
 from digitalio import DigitalInOut, Direction, Pull
 import neopixel
+# from adafruit_led_animation.color import RED, MAGENTA, ORANGE, TEAL, WHITE, PURPLE
 
 i2s = audiobusio.I2SOut(board.GP27, board.GP28, board.GP26)
 data = open("on.mp3", "rb")
@@ -15,8 +15,8 @@ saber_on = audiomp3.MP3Decoder(data)
 i2s.play(saber_on)
 
 pixel_pin = board.GP0
-num_pixels = 7
-pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.0, auto_write=False)
+num_pixels = 59
+pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1.0, auto_write=False)
 
 RED = (255, 0, 0)
 YELLOW = (255, 250, 0)
@@ -30,10 +30,10 @@ WHITE = (255, 255, 255)
 SABER_COLOR = RED
 
 
-btn = DigitalInOut(board.GP5)
-btn.direction = Direction.INPUT
-btn.pull = Pull.UP
-prev_state = btn.value
+activation_btn = DigitalInOut(board.GP5)
+activation_btn.direction = Direction.INPUT
+activation_btn.pull = Pull.UP
+prev_state = activation_btn.value
 
 whack = DigitalInOut(board.GP15)
 whack.direction = Direction.INPUT
@@ -48,7 +48,26 @@ saber_off = audiomp3.MP3Decoder(data)
 
 data = open("Clash clash.mp3", "rb")
 saber_clash = audiomp3.MP3Decoder(data)
+
+data = open("hum.mp3", "rb")
+saber_hum = audiomp3.MP3Decoder(data)
+
 lightsaber_active = False
+play_hum = False
+
+def color_chase(color, wait):
+    pixels.brightness=1.0
+    for i in range(num_pixels):
+        pixels[i] = color
+        time.sleep(wait)
+        pixels.show()
+
+def reverse_color_chase(color, wait):
+    pixels.brightness=1.0
+    for i in reversed(range(num_pixels)):
+        pixels[i] = color
+        time.sleep(wait)
+        pixels.show()
 
 
 def idle_lightsaber(sound):
@@ -59,106 +78,35 @@ def idle_lightsaber(sound):
 
 
 def start_lightsaber(sound):
+    global lightsaber_active
     i2s.play(sound)
+    color_chase(SABER_COLOR,0.004)
 
-    pixels.brightness = 0.0
-    sleep = 0.05
-    pixels.fill(SABER_COLOR)
-    pixels.show()
-
-    pixels.brightness = 0.1
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.2
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.3
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.4
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.5
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.6
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.7
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.8
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.9
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 1.0
-    pixels.show()
     lightsaber_active = True
-    return lightsaber_active
 
 
 def stop_lightsaber(sound):
-    i2s.stop()
+    global lightsaber_active
+    if lightsaber_active == True:
+        play_hum = False
+        i2s.stop()
 
-    i2s.play(sound)
-
-    pixels.brightness = 0.7
-    sleep = 0.05
-    pixels.fill(SABER_COLOR)
-    pixels.show()
-
-    pixels.brightness = 0.6
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.5
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.4
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.3
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.2
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.1
-    pixels.show()
-    time.sleep(sleep)
-
-    pixels.brightness = 0.0
-    pixels.show()
+        i2s.play(sound)
+        reverse_color_chase(0,0.004)
+    
     lightsaber_active = False
-    return lightsaber_active
 
 while True:
     print("lightsaber_active: ", lightsaber_active)
-    cur_state = btn.value
+    cur_state = activation_btn.value
     if cur_state != prev_state:
         if not cur_state:
             print("BTN is down")
-            lightsaber_active = start_lightsaber(saber_on)
-            #idle_lightsaber(saber_on)
+            start_lightsaber(saber_on)
 
         else:
           print("BTN is up")
-          lightsaber_active = stop_lightsaber(saber_off)
+          stop_lightsaber(saber_off)
 
     prev_state = cur_state
 
@@ -175,6 +123,13 @@ while True:
 
 
     if lightsaber_active == True:
-      pixels.fill(SABER_COLOR)
-      pixels.brightness = 1.0
-      pixels.show()
+        pixels.brightness = 1.0
+        pixels.show()
+    else:
+        pixels.brightness = 0.0
+        pixels.show()
+    # idle_lightsaber(saber_hum)
+    #   if play_hum == False:
+    #     i2s.play(saber_clash, loop=True)
+    #     play_hum = True
+
